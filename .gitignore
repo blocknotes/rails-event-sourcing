@@ -1,3 +1,5 @@
+*.log
+
 /.bundle/
 /.yardoc
 /_yardoc/
@@ -13,5 +15,8 @@
 .rubocop-*
 
 Gemfile.lock
+
+/spec/dummy/db/*.sqlite3
+/spec/dummy/tmp/*
 
 /_misc/
