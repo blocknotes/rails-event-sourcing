@@ -29,7 +29,7 @@
 #     end
 #   end
 # ```
-module Lib
+module RailsEventSourcing
   module Command
     extend ActiveSupport::Concern
 
