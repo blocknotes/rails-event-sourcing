@@ -155,6 +155,30 @@ RSpec.describe RailsEventSourcing::BaseEvent do
     end
   end
 
+  describe '#rollback!' do
+    let(:some_event_class) { Class.new(todo_list_event_class) }
+
+    let(:first_event) { todo_list_event_class.create!(name: 'First', type: 'SomeEvent') }
+    let(:second_event) { todo_list_event_class.create!(name: 'Second', type: 'SomeEvent', todo_list: todo_list) }
+    let(:third_event) { todo_list_event_class.create!(name: 'Third', type: 'SomeEvent', todo_list: todo_list) }
+    let(:todo_list) { TodoList.last }
+
+    before do
+      stub_const('SomeEvent', some_event_class)
+    end
+
+    it 'rollbacks to a specific version', :aggregate_failures do
+      expect { first_event }.to change(TodoList, :count).by(1)
+      expect { second_event }.to change(todo_list, :name).from('First').to('Second')
+      expect { third_event }.to change(todo_list, :name).from('Second').to('Third')
+      expect { second_event.rollback! }.to(
+        change(todo_list, :name).from('Third').to('Second').and(
+          change(todo_list_event_class, :count).by(-1)
+        )
+      )
+    end
+  end
+
   describe '.aggregate_name' do
     subject(:aggregate_name) { todo_list_event_class.aggregate_name }
 
@@ -179,5 +203,31 @@ RSpec.describe RailsEventSourcing::BaseEvent do
     it 'returns the aggregate name' do
       expect(event_name).to eq 'todo_list/event'
     end
+  end
+
+  describe '.events_for' do
+    subject(:events_for) { todo_list_event_class.events_for(todo_list) }
+
+    let(:some_event_class) { Class.new(todo_list_event_class) }
+    let(:todo_list) { TodoList.last }
+
+    before do
+      stub_const('SomeEvent', some_event_class)
+    end
+
+    it 'returns the list of events for a specific entity' do
+      events = [
+        todo_list_event_class.create!(name: 'First', type: 'SomeEvent'),
+        todo_list_event_class.create!(name: 'Second', type: 'SomeEvent', todo_list: todo_list),
+        todo_list_event_class.create!(name: 'Third', type: 'SomeEvent', todo_list: todo_list)
+      ]
+      expect(events_for).to match(events)
+    end
+  end
+
+  describe '.reserved_column_names' do
+    subject(:reserved_column_names) { todo_list_event_class.reserved_column_names }
+
+    it { is_expected.to eq %w[id created_at updated_at] }
   end
 end

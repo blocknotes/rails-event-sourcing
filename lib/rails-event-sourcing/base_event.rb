@@ -48,6 +48,25 @@ module RailsEventSourcing
       public_send "build_#{aggregate_name}"
     end
 
+    # Rollback an aggregate entity to a specific version
+    #
+    # Update the aggregate with the changes up to the current event and
+    # destroys the events after
+    def rollback!
+      base_class = self.class.superclass == RailsEventSourcing::BaseEvent ? self.class : self.class.superclass
+      new_attributes = aggregate.class.new.attributes
+      preserve_columns = new_attributes.keys - base_class.reserved_column_names
+      new_attributes.slice!(*preserve_columns)
+      aggregate.assign_attributes(new_attributes)
+      aggregate.transaction do
+        base_class.events_for(aggregate).where('id > ?', id).destroy_all
+        base_class.events_for(aggregate).reorder('id ASC').each do |event|
+          event.apply(aggregate)
+        end
+        aggregate.save!
+      end
+    end
+
     delegate :aggregate_name, to: :class
 
     class << self
@@ -90,6 +109,14 @@ module RailsEventSourcing
       # Used when sending events to the data pipeline
       def event_name
         name.underscore
+      end
+
+      def events_for(aggregate)
+        where(aggregate_name => aggregate)
+      end
+
+      def reserved_column_names
+        %w[id created_at updated_at]
       end
     end
 
