@@ -1,42 +1,46 @@
-# Dispatcher implementation used by Events::Dispatcher.
+# frozen_string_literal: true
+
 module RailsEventSourcing
+  # Dispatcher implementation used by Events on after save.
   class EventDispatcher
-    # Register Reactors to Events.
-    # * Reactors registered with `trigger` will be triggered synchronously
-    # * Reactors registered with `async` will be triggered asynchronously via a Sidekiq Job
-    #
-    # Example:
-    #
-    #   on BaseEvent, trigger: LogEvent, async: TrackEvent
-    #   on PledgeCancelled, PaymentFailed, async: [NotifyAdmin, CreateTask]
-    #   on [PledgeCancelled, PaymentFailed], async: [NotifyAdmin, CreateTask]
-    #
-    def self.on(*events, trigger: [], async: [])
-      rules.register(events: events.flatten, sync: Array(trigger), async: Array(async))
-    end
+    class << self
+      # Register Reactors to Events.
+      # * Reactors registered with `trigger` will be triggered synchronously
+      # * Reactors registered with `async` will be triggered asynchronously via a Sidekiq Job
+      #
+      # Example:
+      #
+      #   on SomeEvent, trigger: ->(item) { puts "Callable block on #{item.id}" }
+      #   on BaseEvent, trigger: LogEvent, async: TrackEvent
+      #   on PledgeCancelled, PaymentFailed, async: [NotifyAdmin, CreateTask]
+      #   on [PledgeCancelled, PaymentFailed], async: [NotifyAdmin, CreateTask]
+      #
+      def on(*events, trigger: [], async: [])
+        rules.register(events: events.flatten, sync: Array(trigger), async: Array(async))
+      end
 
-    # Dispatches events to matching Reactors once.
-    # Called by all events after they are created.
-    def self.dispatch(event)
-      reactors = rules.for(event)
-      reactors.sync.each { |reactor| reactor.call(event) }
-      reactors.async.each { |reactor| ReactorJob.perform_later(event, reactor.to_s) }
-    end
+      # Dispatches events to matching Reactors once.
+      # Called by all events after they are created.
+      def dispatch(event)
+        reactors = rules.for(event)
+        reactors.sync.each { |reactor| reactor.call(event) }
+        reactors.async.each { |reactor| ReactorJob.perform_later(event, reactor.to_s) }
+      end
 
-    def self.rules
-      @rules ||= RuleSet.new
+      def rules
+        @@rules ||= RuleSet.new # rubocop:disable Style/ClassVars
+      end
     end
 
     class RuleSet
       def initialize
-        @rules ||= Hash.new { |h, k| h[k] = ReactorSet.new }
+        @rules = Hash.new { |h, k| h[k] = ReactorSet.new }
       end
 
-      # Register events with their sync and async Reactors
       def register(events:, sync:, async:)
         events.each do |event|
-          @rules[event].add_sync sync
-          @rules[event].add_async async
+          @rules[event].add_sync(sync)
+          @rules[event].add_async(async)
         end
       end
 
@@ -47,8 +51,8 @@ module RailsEventSourcing
         @rules.each do |event_class, rule|
           # Match event by class including ancestors. e.g. All events match a role for BaseEvent.
           if event.is_a?(event_class)
-            reactors.add_sync rule.sync
-            reactors.add_async rule.async
+            reactors.add_sync(rule.sync)
+            reactors.add_async(rule.async)
           end
         end
 
