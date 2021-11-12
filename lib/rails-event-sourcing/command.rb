@@ -82,7 +82,11 @@ module RailsEventSourcing
 
     # A new record or nil if noop
     def event
-      @event ||= build_event
+      @event ||= (noop? ? nil : build_event)
+    end
+
+    def noop?
+      false
     end
 
     private

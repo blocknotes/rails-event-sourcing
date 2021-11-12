@@ -97,6 +97,48 @@ RSpec.describe RailsEventSourcing::Command do
     end
   end
 
+  describe '#noop?' do
+    subject(:noop?) { command_class.new(arg1: nil).noop? }
+
+    it { is_expected.to be_falsey }
+
+    context 'when a command overrides noop?' do
+      let(:command_class) do
+        Class.new do
+          include RailsEventSourcing::Command
+
+          attributes :arg1
+
+          def build_event
+            SomeEvent.new(name: 'An event', type: 'SomeEvent')
+          end
+
+          def noop?
+            arg1 == :no_changes_needed
+          end
+        end
+      end
+
+      before do
+        allow(SomeEvent).to receive(:new).and_call_original
+      end
+
+      it "executes the command if noop? is falsey", :aggregate_failures do
+        command = command_class.new(arg1: nil)
+        expect(command).not_to be_noop
+        command.call
+        expect(SomeEvent).to have_received(:new)
+      end
+
+      it "doesn't execute the command if noop? is truthy", :aggregate_failures do
+        command = command_class.new(arg1: :no_changes_needed)
+        expect(command).to be_noop
+        command.call
+        expect(SomeEvent).not_to have_received(:new)
+      end
+    end
+  end
+
   describe 'command validation' do
     subject(:validate!) { command.validate! }
 
