@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module TodoItems
-  class Created < TodoItems::BaseEvent
+  class Created < TodoItems::Event
     data_attributes :todo_list_id, :name
 
     def apply(todo_item)

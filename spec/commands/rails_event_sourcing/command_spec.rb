@@ -1,12 +1,16 @@
 # frozen_string_literal: true
 
 RSpec.describe RailsEventSourcing::Command do
-  let(:event_class) do
+  let(:base_event_class) do
     Class.new(RailsEventSourcing::BaseEvent) do
       self.table_name = 'todo_list_events'
 
       belongs_to :todo_list
+    end
+  end
 
+  let(:event_class) do
+    Class.new(SomeBaseEvent) do
       data_attributes :name
 
       def apply(todo_list)
@@ -23,12 +27,13 @@ RSpec.describe RailsEventSourcing::Command do
       attributes :arg1
 
       def build_event
-        SomeEvent.new(name: 'An event', type: 'SomeEvent')
+        SomeEvent.new(name: 'An event')
       end
     end
   end
 
   before do
+    stub_const('SomeBaseEvent', base_event_class)
     stub_const('SomeEvent', event_class)
   end
 
@@ -110,7 +115,7 @@ RSpec.describe RailsEventSourcing::Command do
           attributes :arg1
 
           def build_event
-            SomeEvent.new(name: 'An event', type: 'SomeEvent')
+            SomeEvent.new(name: 'An event')
           end
 
           def noop?

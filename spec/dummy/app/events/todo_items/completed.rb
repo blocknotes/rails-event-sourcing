@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module TodoItems
-  class Completed < TodoItems::BaseEvent
+  class Completed < TodoItems::Event
     def apply(todo_item)
       todo_item.completed = true
 
