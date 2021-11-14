@@ -6,7 +6,7 @@ module RailsEventSourcing
     class << self
       # Register Reactors to Events.
       # * Reactors registered with `trigger` will be triggered synchronously
-      # * Reactors registered with `async` will be triggered asynchronously via a Sidekiq Job
+      # * Reactors registered with `async` will be triggered asynchronously via a ActiveJob
       #
       # Example:
       #
@@ -24,7 +24,7 @@ module RailsEventSourcing
       def dispatch(event)
         reactors = rules.for(event)
         reactors.sync.each { |reactor| reactor.call(event) }
-        reactors.async.each { |reactor| ReactorJob.perform_later(event, reactor.to_s) }
+        reactors.async.each { |reactor| RailsEventSourcing::ReactorJob.perform_later(event, reactor.to_s) }
       end
 
       def rules
