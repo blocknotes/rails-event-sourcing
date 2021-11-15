@@ -136,7 +136,7 @@ module RailsEventSourcing
     end
 
     def dispatch
-      EventDispatcher.dispatch(self)
+      Dispatcher.dispatch(self)
     end
   end
 end

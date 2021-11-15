@@ -2,7 +2,7 @@
 
 module RailsEventSourcing
   # Dispatcher implementation used by Events on after save.
-  class EventDispatcher
+  class Dispatcher
     class << self
       # Register Reactors to Events.
       # * Reactors registered with `trigger` will be triggered synchronously

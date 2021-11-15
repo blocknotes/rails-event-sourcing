@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe RailsEventSourcing::EventDispatcher do
+RSpec.describe RailsEventSourcing::Dispatcher do
   let(:base_event_class) do
     Class.new(RailsEventSourcing::BaseEvent) do
       self.table_name = 'todo_list_events'

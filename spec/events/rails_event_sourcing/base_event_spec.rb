@@ -47,12 +47,12 @@ RSpec.describe RailsEventSourcing::BaseEvent do
 
   describe 'callback: after_create' do
     before do
-      allow(RailsEventSourcing::EventDispatcher).to receive(:dispatch)
+      allow(RailsEventSourcing::Dispatcher).to receive(:dispatch)
       SomeEvent.create!(name: 'Some name')
     end
 
-    it 'calls dispatch on EventDispatcher' do
-      expect(RailsEventSourcing::EventDispatcher).to have_received(:dispatch)
+    it 'calls dispatch on Dispatcher' do
+      expect(RailsEventSourcing::Dispatcher).to have_received(:dispatch)
     end
   end
 
