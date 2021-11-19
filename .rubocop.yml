@@ -10,6 +10,7 @@ AllCops:
     - _misc/*
     - bin/*
     - spec/dummy/**/*
+    - vendor/**/*
   NewCops: enable
   SuggestExtensions: false
   TargetRubyVersion: 2.6

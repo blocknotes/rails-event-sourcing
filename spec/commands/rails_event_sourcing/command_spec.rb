@@ -47,7 +47,7 @@ RSpec.describe RailsEventSourcing::Command do
     end
 
     it 'raises an ArgumentError exception' do
-      expect { command_class.new }.to raise_exception(ArgumentError, /missing keywords: arg1, arg2, arg3/)
+      expect { command_class.new }.to raise_exception(ArgumentError, /missing keywords:.*arg1,.*arg2,.*arg3/)
     end
 
     it 'attachs the arguments to the command context' do

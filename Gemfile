@@ -10,6 +10,7 @@ gem 'simplecov'
 gem 'sqlite3'
 
 # Linters
+gem 'fasterer'
 gem 'rubocop', '~> 1.21'
 gem 'rubocop-rspec'
 

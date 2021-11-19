@@ -1,0 +1,5 @@
+---
+exclude_paths:
+  - bin/*
+  - spec/**/*
+  - vendor/**/*
