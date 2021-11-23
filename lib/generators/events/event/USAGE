@@ -1,0 +1,14 @@
+Description:
+    Create an event model (and a base event model, if missing).
+
+    The first argument must be in the form: namespace/event_name
+    The extra arguments are data attributes handled by the event
+
+Example:
+    bin/rails generate events:event users/created name age
+
+    This will create:
+        app/events/users/event.rb
+        app/events/users/created_event.rb
+
+    In the event model a basic apply method is defined with the specified attributes.

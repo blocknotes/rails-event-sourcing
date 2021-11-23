@@ -112,7 +112,7 @@ end
 
 ## To do
 
-- [ ] Generators for events, commands and dispatchers
+- [ ] Generator for events, commands and dispatchers
 - [ ] Database specific optimizations
 - [ ] Add more usage examples
 
